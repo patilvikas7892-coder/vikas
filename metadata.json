@@ -1,0 +1,6 @@
+{
+  "name": "Jal-Jeevan Groundwater & Water Quality Hub",
+  "description": "Groundwater information chatbot and monitoring platform to check local water quality levels, aquifer health, and conservation status across regions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
