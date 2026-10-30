@@ -5,6 +5,10 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 import { DISTRICT_DATABASE, BIS_STANDARDS } from './src/data/groundwaterData.ts';
+import { INITIAL_COMMUNITY_ALERTS } from './src/data/communityAlertsData.ts';
+import { CommunityAlert } from './src/types.ts';
+
+let communityAlerts: CommunityAlert[] = [...INITIAL_COMMUNITY_ALERTS];
 
 dotenv.config();
 
@@ -94,6 +98,146 @@ app.get('/api/districts/:id', (req: Request, res: Response) => {
     return res.status(404).json({ error: 'District not found in database' });
   }
   return res.json(district);
+});
+
+// API: Get Community Alerts (filtered by district, category, status, or search query)
+app.get('/api/alerts', (req: Request, res: Response) => {
+  const district = (req.query.district as string || '').trim().toLowerCase();
+  const category = (req.query.category as string || '').trim();
+  const severity = (req.query.severity as string || '').trim();
+  const status = (req.query.status as string || '').trim();
+  const query = (req.query.q as string || '').trim().toLowerCase();
+
+  let filtered = [...communityAlerts];
+
+  if (district && district !== 'all') {
+    filtered = filtered.filter(
+      (a) => a.district.toLowerCase() === district || a.district.toLowerCase().includes(district)
+    );
+  }
+
+  if (category && category !== 'All') {
+    filtered = filtered.filter((a) => a.category.toLowerCase() === category.toLowerCase());
+  }
+
+  if (severity && severity !== 'All') {
+    filtered = filtered.filter((a) => a.severity.toLowerCase() === severity.toLowerCase());
+  }
+
+  if (status && status !== 'All') {
+    filtered = filtered.filter((a) => a.status.toLowerCase() === status.toLowerCase());
+  }
+
+  if (query) {
+    filtered = filtered.filter(
+      (a) =>
+        a.title.toLowerCase().includes(query) ||
+        a.description.toLowerCase().includes(query) ||
+        a.locality.toLowerCase().includes(query) ||
+        a.district.toLowerCase().includes(query)
+    );
+  }
+
+  // Sort by newest first
+  filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  res.json({
+    total: filtered.length,
+    alerts: filtered,
+  });
+});
+
+// API: Post a new Community Alert
+app.post('/api/alerts', (req: Request, res: Response) => {
+  const {
+    title,
+    category,
+    severity,
+    district,
+    state,
+    locality,
+    description,
+    reportedBy,
+    authorRole,
+    authorOrganization,
+    metrics,
+    actionAdvised,
+  } = req.body;
+
+  if (!title || !district || !description) {
+    return res.status(400).json({ error: 'Title, district, and description are required.' });
+  }
+
+  const newAlert: CommunityAlert = {
+    id: `alert-${Date.now()}`,
+    title: title.trim(),
+    category: category || 'Chemical Contamination',
+    severity: severity || 'Warning',
+    status: 'Open',
+    district: district.trim(),
+    state: state || 'India',
+    locality: locality ? locality.trim() : 'Locality not specified',
+    description: description.trim(),
+    reportedBy: reportedBy || 'Concerned Citizen',
+    authorRole: authorRole || 'citizen',
+    authorOrganization,
+    timestamp: 'Just now',
+    createdAt: new Date().toISOString(),
+    upvotes: 1,
+    upvotedBy: reportedBy ? [reportedBy] : [],
+    verifiedByOfficial: authorRole === 'officer' || authorRole === 'technician',
+    officialNote: authorRole === 'officer' ? 'Report filed by registered groundwater officer.' : undefined,
+    metrics: metrics || {},
+    actionAdvised,
+  };
+
+  communityAlerts.unshift(newAlert);
+  return res.status(201).json(newAlert);
+});
+
+// API: Upvote/Confirm an alert
+app.post('/api/alerts/:id/upvote', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { userId } = req.body;
+
+  const alertIndex = communityAlerts.findIndex((a) => a.id === id);
+  if (alertIndex === -1) {
+    return res.status(404).json({ error: 'Alert not found' });
+  }
+
+  const alert = communityAlerts[alertIndex];
+  const userIdentifier = userId || 'anonymous-citizen';
+
+  const alreadyUpvoted = alert.upvotedBy.includes(userIdentifier);
+  if (alreadyUpvoted) {
+    // Remove upvote
+    alert.upvotes = Math.max(0, alert.upvotes - 1);
+    alert.upvotedBy = alert.upvotedBy.filter((u) => u !== userIdentifier);
+  } else {
+    // Add upvote
+    alert.upvotes += 1;
+    alert.upvotedBy.push(userIdentifier);
+  }
+
+  return res.json({ upvotes: alert.upvotes, upvoted: !alreadyUpvoted });
+});
+
+// API: Verify or add official advisory to an alert
+app.post('/api/alerts/:id/verify', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { officialNote, status, actionAdvised } = req.body;
+
+  const alert = communityAlerts.find((a) => a.id === id);
+  if (!alert) {
+    return res.status(404).json({ error: 'Alert not found' });
+  }
+
+  alert.verifiedByOfficial = true;
+  if (officialNote) alert.officialNote = officialNote;
+  if (status) alert.status = status;
+  if (actionAdvised) alert.actionAdvised = actionAdvised;
+
+  return res.json(alert);
 });
 
 // API: Chat with Gemini 3.8 Flash (Streaming via SSE)

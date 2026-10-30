@@ -10,6 +10,7 @@ import { RegionalInspector } from './components/RegionalInspector';
 import { WaterQualityChecker } from './components/WaterQualityChecker';
 import { RainwaterCalculator } from './components/RainwaterCalculator';
 import { WaterFootprintTracker } from './components/WaterFootprintTracker';
+import { CommunityAlerts } from './components/CommunityAlerts';
 import { StandardsGuide } from './components/StandardsGuide';
 import { LoginPage } from './components/LoginPage';
 import { DistrictGroundwaterInfo, UserProfile } from './types';
@@ -106,6 +107,18 @@ export default function App() {
     }, 100);
   };
 
+  const handleConsultAIWithAlert = (alertContext: string) => {
+    handleTabChange('chat');
+    setTimeout(() => {
+      const chatInput = document.querySelector('textarea') as HTMLTextAreaElement | null;
+      if (chatInput) {
+        chatInput.value = alertContext;
+        chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+        chatInput.focus();
+      }
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors selection:bg-sky-500/20">
       {/* Navigation Header */}
@@ -133,6 +146,14 @@ export default function App() {
           <RegionalInspector
             onSelectDistrictForChat={handleSelectDistrictForChat}
             onSelectDistrictForRWH={handleSelectDistrictForRWH}
+          />
+        )}
+
+        {activeTab === 'alerts' && (
+          <CommunityAlerts
+            currentUser={currentUser}
+            onConsultAIWithAlert={handleConsultAIWithAlert}
+            onNavigateToLogin={() => handleTabChange('login')}
           />
         )}
 

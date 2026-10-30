@@ -88,3 +88,39 @@ export interface DailyWaterLog {
   perCapitaLitres: number;
 }
 
+export type AlertCategory =
+  | 'Chemical Contamination'
+  | 'Groundwater Depletion'
+  | 'Pipeline & Supply Failure'
+  | 'Borewell Failure'
+  | 'Turbidity & Odor'
+  | 'Biological / Sewage Contamination';
+
+export type AlertSeverity = 'Critical' | 'Warning' | 'Informational' | 'Resolved';
+
+export type AlertStatus = 'Open' | 'Investigating' | 'Resolved';
+
+export interface CommunityAlert {
+  id: string;
+  title: string;
+  category: AlertCategory;
+  severity: AlertSeverity;
+  status: AlertStatus;
+  district: string;
+  state: string;
+  locality: string;
+  description: string;
+  reportedBy: string;
+  authorRole: UserRole;
+  authorOrganization?: string;
+  timestamp: string;
+  createdAt: string;
+  upvotes: number;
+  upvotedBy: string[];
+  verifiedByOfficial: boolean;
+  officialNote?: string;
+  metrics?: Partial<WaterQualityMetrics>;
+  actionAdvised?: string;
+}
+
+

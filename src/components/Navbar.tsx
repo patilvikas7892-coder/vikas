@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Droplets, MapPin, FlaskConical, CloudRain, BookOpen, MessageSquare, Globe, ShieldCheck, User, LogIn, LogOut, ChevronDown } from 'lucide-react';
+import { Droplets, MapPin, FlaskConical, CloudRain, BookOpen, MessageSquare, Globe, ShieldCheck, User, LogIn, LogOut, ChevronDown, ShieldAlert } from 'lucide-react';
 import { UserProfile } from '../types';
 
-export type ActiveTab = 'chat' | 'directory' | 'checker' | 'rwh' | 'footprint' | 'guide' | 'login';
+export type ActiveTab = 'chat' | 'directory' | 'alerts' | 'checker' | 'rwh' | 'footprint' | 'guide' | 'login';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -85,6 +85,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <MapPin className="w-3.5 h-3.5" />
               <span>Regional Levels</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('alerts')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+                activeTab === 'alerts'
+                  ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
+              <span>Community Alerts</span>
             </button>
 
             <button
@@ -254,6 +266,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <MapPin className="w-3.5 h-3.5" />
             Regional Levels
+          </button>
+          <button
+            onClick={() => setActiveTab('alerts')}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg whitespace-nowrap font-medium ${
+              activeTab === 'alerts'
+                ? 'bg-rose-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800'
+            }`}
+          >
+            <ShieldAlert className="w-3.5 h-3.5" />
+            Alerts
           </button>
           <button
             onClick={() => setActiveTab('checker')}

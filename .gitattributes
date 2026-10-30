@@ -1,0 +1,28 @@
+# GitHub Linguist Language Configuration
+# Ensures HTML, Java, Python, TypeScript, and CSS are all prominently recognized in GitHub's repository Language bar
+
+# Python analytics & ML hydrogeology pipelines
+*.py linguist-detectable=true
+*.py linguist-language=Python
+
+# Java enterprise telemetry & community alert broadcaster
+*.java linguist-detectable=true
+*.java linguist-language=Java
+
+# HTML entrypoint & components
+*.html linguist-detectable=true
+*.html linguist-language=HTML
+
+# TypeScript frontend application & full-stack API server
+*.ts linguist-detectable=true
+*.ts linguist-language=TypeScript
+*.tsx linguist-detectable=true
+*.tsx linguist-language=TypeScript
+
+# Tailwind stylesheet
+*.css linguist-detectable=true
+*.css linguist-language=CSS
+
+# Shell automation scripts
+*.sh linguist-detectable=true
+*.sh linguist-language=Shell
